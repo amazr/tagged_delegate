@@ -1,0 +1,16 @@
+[package]
+name = "tagged_delegate"
+version = "0.1.0"
+edition = "2024"
+authors = ["Alex Mazur <alexmazurdev@proton.me>"]
+description = "Builds a delegate macro on enums where each variant contains a value that implements the same trait"
+license = "Apache-2.0"
+repository = "https://github.com/amazr/tagged_delegate"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "2.0.111"
+quote = "1.0.42"
+proc-macro2 = "1.0.103"
