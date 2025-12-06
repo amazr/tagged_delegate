@@ -3,7 +3,9 @@
 use proc_macro::TokenStream;
 use quote::{format_ident, quote};
 use syn::{
-    parse::{Parse, ParseStream}, parse_macro_input, Data, DeriveInput, Ident
+    Data, DeriveInput, Ident,
+    parse::{Parse, ParseStream},
+    parse_macro_input,
 };
 
 struct TaggedDelegateArgs {
@@ -18,9 +20,7 @@ impl Parse for TaggedDelegateArgs {
             input.parse()?
         };
 
-        Ok(Self {
-            name,
-        })
+        Ok(Self { name })
     }
 }
 
@@ -32,7 +32,7 @@ pub fn tagged_delegate(attr: TokenStream, item: TokenStream) -> TokenStream {
     let enum_name = &input.ident;
     let variants = match &input.data {
         Data::Enum(data) => &data.variants,
-        _ => panic!("tagged_delegates only supports enums")
+        _ => panic!("tagged_delegates only supports enums"),
     };
 
     let variant_names = variants.iter().map(|v| &v.ident).collect::<Vec<_>>();
