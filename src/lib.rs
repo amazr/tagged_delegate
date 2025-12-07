@@ -37,6 +37,7 @@ pub fn tagged_delegate(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let variant_names = variants.iter().map(|v| &v.ident).collect::<Vec<_>>();
     let mut_macro_name = format_ident!("mut_{name}");
+    let boxed_macro_name = format_ident!("boxed_{name}");
     let pinned_macro_name = format_ident!("pinned_{name}");
 
     let output = quote! {
@@ -65,18 +66,38 @@ pub fn tagged_delegate(attr: TokenStream, item: TokenStream) -> TokenStream {
         }
 
         #[allow(unused_macros)]
-        macro_rules! #pinned_macro_name {
-            ($self: expr, |$variant:ident| $body:expr) => {
+        macro_rules! #boxed_macro_name {
+            ($self:expr, as $trait_path:path, |$variant:ident| $body:expr) => {
                 match &$self.#name {
                     #(
                         #enum_name::#variant_names($variant) => {
                             #[cfg(not(target_arch = "wasm32"))]
                             {
-                                ::std::boxed::Box::pin($body) as ::std::pin::Pin<::std::boxed::Box<dyn ::std::future::Future<Output = _> + ::std::marker::Send + '_>>
+                                ::std::boxed::Box::new($body) as ::std::boxed::Box<dyn $trait_path + ::std::marker::Send>
                             }
                             #[cfg(target_arch = "wasm32")]
                             {
-                                ::std::boxed::Box::pin($body) as ::std::pin::Pin<::std::boxed::Box<dyn ::std::future::Future<Output = _> + '_>>
+                                ::std::boxed::Box::new($body) as ::std::boxed::Box<dyn $trait_path>
+                            }
+                        }
+                    )*
+                }
+            };
+        }
+
+        #[allow(unused_macros)]
+        macro_rules! #pinned_macro_name {
+            ($self:expr, as $trait_path:path, |$variant:ident| $body:expr) => {
+                match &$self.#name {
+                    #(
+                        #enum_name::#variant_names($variant) => {
+                            #[cfg(not(target_arch = "wasm32"))]
+                            {
+                                ::std::boxed::Box::pin($body) as ::std::pin::Pin<::std::boxed::Box<dyn $trait_path + ::std::marker::Send>>
+                            }
+                            #[cfg(target_arch = "wasm32")]
+                            {
+                                ::std::boxed::Box::pin($body) as ::std::pin::Pin<::std::boxed::Box<dyn $trait_path>>
                             }
                         }
                     )*
