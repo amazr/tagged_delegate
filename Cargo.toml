@@ -1,6 +1,6 @@
 [package]
 name = "tagged_delegate"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 authors = ["Alex Mazur <alexmazurdev@proton.me>"]
 description = "Builds a delegate macro on enums where each variant contains a value that implements the same trait"
